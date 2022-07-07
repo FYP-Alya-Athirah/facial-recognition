@@ -14,18 +14,23 @@ from datetime import datetime
 # specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
 # Get a reference to webcam #0 (the default one)
-# video_capture = cv2.VideoCapture(0)
-video_capture = cv2.VideoCapture('http://192.168.100.15:81/stream')
+video_capture = cv2.VideoCapture(0)
+# video_capture = cv2.VideoCapture('http://192.168.100.15:81/stream')
 
 
 alya_image = face_recognition.load_image_file("alya.jpg")
 alya_face_encoding = face_recognition.face_encodings(alya_image)[0]
+
+ross_image = face_recognition.load_image_file("ross.jpg")
+ross_face_encoding = face_recognition.face_encodings(ross_image)[0]
 # Create arrays of known face encodings and their names
 known_face_encodings = [
-    alya_face_encoding
+    alya_face_encoding,
+    ross_face_encoding
 ]
 known_face_names = [
-    "Alya"
+    "\'Alya Athirah",
+    "Ross Geller"
 ]
 
 # Initialize some variables
@@ -43,7 +48,8 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 
-
+alyaDone = False
+rossDone = False
 
 while True:
     # Grab a single frame of video
@@ -79,10 +85,36 @@ while True:
                 name = known_face_names[best_match_index]
                 now = datetime.now()
                 current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-                sql = "INSERT INTO recognitions (name, created_at) VALUES (%s,%s)"
-                val = [name,current_time]
-                mycursor.execute(sql,val)
-                mydb.commit()
+
+
+                #add to recognitions table
+                # mycursor.execute(sql,val)
+                # mydb.commit()
+
+                #add to students attendance
+                if (alyaDone==False and name=="\'Alya Athirah"):
+                    sql = "UPDATE students SET attendance = 1 WHERE fullname = \"\'Alya Athirah\""
+                    mycursor.execute(sql)
+                    mydb.commit()
+                    alyaDone=True
+                    # add to recognitions table
+                    sql = "INSERT INTO recognitions (name, created_at) VALUES (%s,%s)"
+                    val = [name,current_time]
+                    mycursor.execute(sql, val)
+                    mydb.commit()
+
+                if(rossDone==False and name=="Ross Geller"):
+                    sql = "UPDATE students SET attendance = 1 WHERE fullname = 'Ross Geller'"
+                    mycursor.execute(sql)
+                    mydb.commit()
+                    rossDone=True
+                    # add to recognitions table
+                    sql = "INSERT INTO recognitions (name, created_at) VALUES (%s,%s)"
+                    val = [name,current_time]
+                    mycursor.execute(sql, val)
+                    mydb.commit()
+
+                # mydb.commit()
 
             face_names.append(name)
 
