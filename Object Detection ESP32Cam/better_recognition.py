@@ -2,6 +2,7 @@ import face_recognition
 import cv2
 import numpy as np
 import mysql.connector
+import os
 from datetime import datetime
 
 # This is a demo of running face recognition on live video from your webcam. It's a little more complicated than the
@@ -17,21 +18,27 @@ from datetime import datetime
 video_capture = cv2.VideoCapture(0)
 # video_capture = cv2.VideoCapture('http://192.168.100.15:81/stream')
 
+#Initialize arrays for dataset
+users_image_paths=[]
+users_images=[]
+users_encodings=[]
+users_labels=[]
 
-alya_image = face_recognition.load_image_file("faces/alya.jpg")
-alya_face_encoding = face_recognition.face_encodings(alya_image)[0]
+#Seed arrays
+users_image_paths = os.listdir("faces") #not included /faces/
+users_labels = [x.split('.')[0] for x in users_image_paths]
+for x in range(len(users_image_paths)):
+    users_image_paths[x]="faces/"+users_image_paths[x]
+for x in users_image_paths:
+    users_images.append(face_recognition.load_image_file(x))
+for x in users_images:
+    users_encodings.append(face_recognition.face_encodings(x)[0])
 
-ross_image = face_recognition.load_image_file("ross.jpg")
-ross_face_encoding = face_recognition.face_encodings(ross_image)[0]
 # Create arrays of known face encodings and their names
-known_face_encodings = [
-    alya_face_encoding,
-    ross_face_encoding
-]
-known_face_names = [
-    "\'Alya Athirah",
-    "Ross Geller"
-]
+# HOT: create array based on folder to encodings
+known_face_encodings = users_encodings
+# HOT: create array based on file names
+known_face_names = users_labels
 
 # Initialize some variables
 face_locations = []
@@ -41,13 +48,15 @@ process_this_frame = True
 
 # mysql db
 mydb = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  password="",
+  host="192.168.100.30",
+  user="remote",
+  password="remote",
   database="schoolmng"
 )
 mycursor = mydb.cursor()
 
+# HOT: create array to DONE
+# check database instead of using local variable
 alyaDone = False
 rossDone = False
 
@@ -85,7 +94,6 @@ while True:
                 name = known_face_names[best_match_index]
                 now = datetime.now()
                 current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
 
                 #add to recognitions table
                 # mycursor.execute(sql,val)
