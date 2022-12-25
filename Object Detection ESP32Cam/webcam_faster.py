@@ -18,10 +18,10 @@ video_capture = cv2.VideoCapture(0)
 # video_capture = cv2.VideoCapture('http://192.168.100.15:81/stream')
 
 
-alya_image = face_recognition.load_image_file("faces/alya.jpg")
+alya_image = face_recognition.load_image_file("faces/Alya Athirah.jpg")
 alya_face_encoding = face_recognition.face_encodings(alya_image)[0]
 
-ross_image = face_recognition.load_image_file("ross.jpg")
+ross_image = face_recognition.load_image_file("Ross Geller.jpg")
 ross_face_encoding = face_recognition.face_encodings(ross_image)[0]
 # Create arrays of known face encodings and their names
 known_face_encodings = [
