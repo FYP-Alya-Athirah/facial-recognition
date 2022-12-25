@@ -124,6 +124,11 @@ while True:
 
                 # mydb.commit()
 
+                #DANGER
+                #Step 1: Find student ID in table "students" based on file names "known_face_names"
+                #Step 2: Check in record_attendance if student is logged today(optional)
+                #Step 3: Insert into DB table "record_attendance" with role,student_id,temp_id,date,time
+                #DONE
             face_names.append(name)
 
     process_this_frame = not process_this_frame
