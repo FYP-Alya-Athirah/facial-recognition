@@ -15,8 +15,8 @@ from datetime import datetime
 # specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
 # Get a reference to webcam #0 (the default one)
-# video_capture = cv2.VideoCapture(0)
-video_capture = cv2.VideoCapture('http://192.168.100.35:8000/stream.mjpg')
+video_capture = cv2.VideoCapture(0)
+# video_capture = cv2.VideoCapture('http://192.168.100.35:8000/stream.mjpg')
 
 #Initialize arrays for dataset
 users_image_paths=[]
@@ -24,11 +24,12 @@ users_images=[]
 users_encodings=[]
 users_labels=[]
 
+directory = "D:/Github/web2/public/images/"
 #Seed arrays
-users_image_paths = os.listdir("faces") #not included /faces/
+users_image_paths = os.listdir(directory) #not included /faces/
 users_labels = [x.split('.')[0] for x in users_image_paths]
 for x in range(len(users_image_paths)):
-    users_image_paths[x]="faces/"+users_image_paths[x]
+    users_image_paths[x]=directory+users_image_paths[x]
 for x in users_image_paths:
     users_images.append(face_recognition.load_image_file(x))
 for x in users_images:
