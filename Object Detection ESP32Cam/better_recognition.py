@@ -10,9 +10,6 @@ from datetime import datetime
 #   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
 #   2. Only detect faces in every other frame of video.
 
-# PLEASE NOTE: This example requires OpenCV (the `cv2` library) to be installed only to read from your webcam.
-# OpenCV is *not* required to use the face_recognition library. It's only required if you want to run this
-# specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
@@ -24,22 +21,40 @@ users_images=[]
 users_encodings=[]
 users_labels=[]
 
+# laravel public directory
 directory = "D:/Github/web2/public/images/"
-#Seed arrays
-users_image_paths = os.listdir(directory) #not included /faces/
-users_labels = [x.split('.')[0] for x in users_image_paths]
-for x in range(len(users_image_paths)):
-    users_image_paths[x]=directory+users_image_paths[x]
-for x in users_image_paths:
-    users_images.append(face_recognition.load_image_file(x))
-for x in users_images:
-    users_encodings.append(face_recognition.face_encodings(x)[0])
+# directory = "faces/"
+
+# Seed by individual file name
+# users_image_paths = os.listdir(directory) #not included /faces/
+# users_labels = [x.split('.')[0] for x in users_image_paths] # get names based on file names in array
+# for x in range(len(users_image_paths)):
+#     users_image_paths[x]=directory+users_image_paths[x]
+# for x in users_image_paths:
+#     users_images.append(face_recognition.load_image_file(x))
+# for x in users_images:
+#     users_encodings.append(face_recognition.face_encodings(x)[0])
+
+# Seed by parent directory name
+users_name_directory = os.listdir(directory)
+# users_labels = [x.split('.')[0] for x in users_image_paths] # every directory found
+for x in range(len(users_name_directory)):
+    users_image_paths = os.listdir(directory+users_name_directory[x])
+    for y in range(len(users_image_paths)):
+        # load image then encode
+        image = face_recognition.load_image_file(directory+users_name_directory[x]+"/"+users_image_paths[y])
+        print(directory+users_name_directory[x]+"/"+users_image_paths[y])
+        users_encodings.append(face_recognition.face_encodings(image)[0])
+        # append to label array
+        users_labels.append(users_name_directory[x])
+
 
 # Create arrays of known face encodings and their names
 # HOT: create array based on folder to encodings
 known_face_encodings = users_encodings
 # HOT: create array based on file names
 known_face_names = users_labels
+
 
 # Initialize some variables
 face_locations = []
@@ -93,6 +108,12 @@ while True:
                 formatted_date = now.strftime('%Y-%m-%d')
                 formatted_time = now.strftime('%H:%M:%S')
                 #DANGER
+                # Step 1: Check if day is morning(attendance 5:00am - 8:00am) or evening(dismissal 11:00am -8:00pm)
+                # Step 2: Check if name is a student/parent/teacher
+                # If student -> directly set attendance/dismissal
+                # If parent -> get all students with that parent and set attendance/dismissal
+                # If teacher -> directly set attendance/dismissal
+
                 #Step 1: Find student ID in table "students" based on file names "known_face_names"
                 sql = "SELECT * FROM students WHERE fullname = %s"
                 val = [name]
@@ -102,7 +123,7 @@ while True:
                 student_id = student_id[0][0]
 
                 #Step 2: Check in record_attendance if student is logged today(optional)
-                sql = "SELECT * FROM record_attendance WHERE student_id = %s AND date = %s"
+                sql = "SELECT * FROM record_attendance WHERE person_id = %s AND role = 1 AND date = %s"
                 val = [student_id, formatted_date]
                 mycursor.execute(sql, val)
                 mycursor.fetchall()
@@ -110,10 +131,11 @@ while True:
 
                 if(mycursor.rowcount==0):
                     # Step 3: Insert into DB table "record_attendance" with role,student_id,temp_id,date,time
-                    sql = "INSERT INTO record_attendance (student_id, date, time) VALUES (%s,%s,%s)"
-                    val = [student_id, formatted_date, formatted_time]
+                    sql = "INSERT INTO record_attendance (person_id, role, date, time) VALUES (%s,%s,%s,%s)"
+                    val = [student_id, 1, formatted_date, formatted_time]
                     mycursor.execute(sql, val)
                     mydb.commit()
+                    #  Update in students table too
                     sql = "UPDATE students SET attend = 1 WHERE fullname = %s"
                     val = [name]
                     mycursor.execute(sql, val)
