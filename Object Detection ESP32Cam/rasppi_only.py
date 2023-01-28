@@ -11,6 +11,7 @@ from flask import Flask, render_template, Response
 #   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
 #   2. Only detect faces in every other frame of video.
 
+
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
 # video_capture = cv2.VideoCapture('http://192.168.100.35:8000/stream.mjpg')
@@ -22,8 +23,8 @@ users_encodings=[]
 users_labels=[]
 
 # laravel public directory
-directory = "D:/Github/web2/public/images/"
-# directory = "faces/"
+# directory = "D:/Github/web2/public/images/"
+directory = "/home/pie/faces/"
 
 # Seed by individual file name
 # users_image_paths = os.listdir(directory) #not included /faces/
@@ -54,6 +55,7 @@ known_face_encodings = users_encodings
 # HOT: create array based on file names
 known_face_names = users_labels
 
+print("dataset loaded")
 
 # Initialize some variables
 face_locations = []
@@ -102,7 +104,6 @@ while True:
             face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:
-                print("found best match\n")
                 name = known_face_names[best_match_index]
                 now = datetime.now()
                 formatted_date = now.strftime('%Y-%m-%d')
@@ -149,32 +150,7 @@ while True:
     process_this_frame = not process_this_frame
 
 
-    # Display the results
-    for (top, right, bottom, left), name in zip(face_locations, face_names):
-        # Scale back up face locations since the frame we detected in was scaled to 1/4 size
-        top *= 4
-        right *= 4
-        bottom *= 4
-        left *= 4
-
-        # Draw a box around the face
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-
-        # Draw a label with a name below the face
-        cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-        font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
-
-    # Display the resulting image
-    cv2.imshow('Video', frame)
-
-
-
-    # Hit 'q' on the keyboard to quit!
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-
 # Release handle to the webcam
 video_capture.release()
 cv2.destroyAllWindows()
+
